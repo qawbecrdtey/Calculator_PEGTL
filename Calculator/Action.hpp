@@ -40,6 +40,14 @@ namespace Calculator {
         }
     };
 
+	template<>
+	struct action<term> {
+		template<typename Input>
+		static void apply(Input const &in) {
+			std::cout << in.string() << " is a term\n";
+		}
+	};
+
     template<>
     struct action<expression> {
         template<typename Input>

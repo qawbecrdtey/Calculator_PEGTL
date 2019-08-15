@@ -14,6 +14,7 @@ namespace Calculator {
         struct digits : tao::pegtl::plus<digit> {};
         struct empty : tao::pegtl::star<blank> {};
         struct space : tao::pegtl::space {};
+		struct spaces : tao::pegtl::star<space> {};
 
     /// symbols
         struct ampersand_sym : tao::pegtl::one<'&'> {};
@@ -36,6 +37,18 @@ namespace Calculator {
 			caret_sym
         > {};
 
+        /// precedence based on C
+        struct precedence_5 : tao::pegtl::sor<
+            star_sym,
+            slash_sym,
+            percent_sym
+        > {};
+
+        struct precedence_6 : tao::pegtl::sor<
+            plus_sym,
+            minus_sym
+        > {};
+
     /// brackets
 
         /// unpaired
@@ -46,7 +59,7 @@ namespace Calculator {
         struct open_curly : tao::pegtl::one<'{'> {};
         struct open_paren : tao::pegtl::one<'('> {};
         
-        /// paired
+        /// paired brackets
         struct brack : tao::pegtl::seq<
             open_brack,
             expression,
@@ -71,11 +84,26 @@ namespace Calculator {
             paren
         > {};
 
+        /// term
+        struct term : tao::pegtl::seq<
+            spaces,
+			tao::pegtl::list<
+				block,
+				precedence_5,
+				space
+			>,
+            spaces
+        >{};
+
         /// expression
         struct expression : tao::pegtl::seq<
-            tao::pegtl::star<space>,
-            tao::pegtl::list<block, binary_sym, space>,
-            tao::pegtl::star<space>
+            spaces,
+			tao::pegtl::list<
+				term,
+				precedence_6,
+				space
+			>,
+            spaces
         > {};
     }
     struct grammar : tao::pegtl::must<expression, tao::pegtl::eolf> {};
