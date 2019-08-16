@@ -6,6 +6,8 @@
 namespace Calculator {
     namespace {
         struct expression;
+        struct semiexpr;
+		struct mathexpr;
 
     /// misc
         struct blank : tao::pegtl::blank {};
@@ -19,11 +21,13 @@ namespace Calculator {
     /// symbols
         struct ampersand_sym : tao::pegtl::one<'&'> {};
         struct caret_sym : tao::pegtl::one<'^'> {};
+        struct colon_sym : tao::pegtl::one<':'> {};
         struct exclamation_sym : tao::pegtl::one<'!'> {};
         struct minus_sym : tao::pegtl::one<'-'> {};
         struct percent_sym : tao::pegtl::one<'%'> {};
         struct plus_sym : tao::pegtl::one<'+'> {};
-        struct question_sym : tao::pegtl::one<30> {}; // 30 = '?'
+        struct question_sym : tao::pegtl::one<'?'> {};
+        struct semicolon_sym : tao::pegtl::one<';'> {};
         struct slash_sym : tao::pegtl::one<'/'> {};
         struct star_sym : tao::pegtl::one<'*'> {};
 
@@ -62,18 +66,26 @@ namespace Calculator {
         /// paired brackets
         struct brack : tao::pegtl::seq<
             open_brack,
-            expression,
+            mathexpr,
             close_brack
         > {};
         struct curly : tao::pegtl::seq<
             open_curly,
-            expression,
+            mathexpr,
             close_curly
         > {};
-        struct paren : tao::pegtl::seq<
-            open_paren,
-            expression,
-            close_paren
+		template<typename what>
+		struct paren : tao::pegtl::seq<
+			open_paren,
+			what,
+			close_paren
+		> {};
+
+    /// keywords
+        struct print_str : tao::pegtl::string<'p', 'r', 'i', 'n', 't'> {};
+
+        struct keyword : tao::pegtl::sor<
+            print_str
         > {};
 
     /// grammar
@@ -81,7 +93,7 @@ namespace Calculator {
         /// block
         struct block : tao::pegtl::sor<
             digits,
-            paren
+            paren<mathexpr>
         > {};
 
         /// term
@@ -95,8 +107,8 @@ namespace Calculator {
             spaces
         >{};
 
-        /// expression
-        struct expression : tao::pegtl::seq<
+        /// mathexpr
+        struct mathexpr : tao::pegtl::seq<
             spaces,
 			tao::pegtl::list<
 				term,
@@ -105,8 +117,30 @@ namespace Calculator {
 			>,
             spaces
         > {};
+
+		/// print command
+		struct print_command : tao::pegtl::seq<
+			print_str,
+			spaces,
+			paren<mathexpr>
+		> {};
+
+        /// semiexpr
+        struct semiexpr : tao::pegtl::sor<
+            mathexpr,
+            print_command
+        > {};
+
+        /// expression
+        struct expression : tao::pegtl::seq<
+            semiexpr,
+            semicolon_sym
+        > {};
     }
-    struct grammar : tao::pegtl::must<expression, tao::pegtl::eolf> {};
+    struct grammar : tao::pegtl::must<
+        tao::pegtl::list<expression, spaces>,
+        tao::pegtl::eolf
+    > {};
 }
 
 #endif

@@ -49,6 +49,30 @@ namespace Calculator {
 	};
 
     template<>
+    struct action<mathexpr> {
+        template<typename Input>
+        static void apply(Input const &in) {
+            std::cout << in.string() << " is a mathexpr\n";
+        }
+	};
+
+	template<>
+	struct action<print_command> {
+		template<typename Input>
+		static void apply(Input const &in) {
+			std::cout << in.string() << " is a print command\n";
+		}
+	};
+
+    template<>
+    struct action<semiexpr> {
+        template<typename Input>
+        static void apply(Input const &in) {
+            std::cout << in.string() << " is a semiexpr\n";
+        }
+    };
+
+    template<>
     struct action<expression> {
         template<typename Input>
         static void apply(Input const &in) {
@@ -63,6 +87,14 @@ namespace Calculator {
             std::cout << in.string() << " is a binary operator\n";
         }
     };
+
+    template<>
+    struct action<grammar> {
+        template<typename Input>
+        static void apply(Input const &in) {
+            std::cout << in.string() << " matches the grammar!\n";
+        }
+	};
 }
 
 #endif

@@ -8,7 +8,7 @@
 #include "Calculator/ParseTree.hpp"
 
 int main() {
-	std::string const s = "1+2*(3-4)-5/6";
+	std::string const s = "1+2*(3-4)-5/6;\nprint(7*8-9/10);";
     try {
         tao::pegtl::memory_input in(s, "");
         tao::pegtl::parse<Calculator::grammar, Calculator::action>(in);
